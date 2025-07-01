@@ -1,12 +1,11 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { Play, ChevronLeft, ChevronRight, Trophy, Star } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Trophy } from 'lucide-react';
 import { useUserProgress } from '@/hooks/useUserProgress';
 import { toast } from '@/hooks/use-toast';
+import LessonTimelineTree from '@/components/LessonTimelineTree';
 
 const PracticeLessons: React.FC = () => {
   const [currentLesson, setCurrentLesson] = useState<number | null>(null);
@@ -17,9 +16,9 @@ const PracticeLessons: React.FC = () => {
     {
       id: 'lesson-1',
       title: 'Bass Basics: Your First Steps',
-      description: 'Learn the fundamentals of holding and playing the bass guitar',
+      description: 'Learn the fundamentals of holding and playing the bass guitar with proper technique and posture.',
       xpReward: 50,
-      difficulty: 'Beginner',
+      difficulty: 'Beginner' as const,
       videos: [
         {
           title: 'Introduction to Bass',
@@ -46,18 +45,26 @@ const PracticeLessons: React.FC = () => {
     {
       id: 'lesson-2',
       title: 'Rhythm and Timing',
-      description: 'Master the foundation of all bass playing',
+      description: 'Master the foundation of all bass playing - develop your internal metronome and rhythmic precision.',
       xpReward: 75,
-      difficulty: 'Beginner',
+      difficulty: 'Beginner' as const,
       locked: !completedLessons.includes('lesson-1')
     },
     {
       id: 'lesson-3',
       title: 'Your First Bassline',
-      description: 'Play a complete song from start to finish',
+      description: 'Play a complete song from start to finish and build confidence with full musical pieces.',
       xpReward: 100,
-      difficulty: 'Intermediate',
+      difficulty: 'Intermediate' as const,
       locked: !completedLessons.includes('lesson-2')
+    },
+    {
+      id: 'lesson-4',
+      title: 'Scales and Patterns',
+      description: 'Learn essential bass scales and finger patterns to expand your musical vocabulary.',
+      xpReward: 125,
+      difficulty: 'Intermediate' as const,
+      locked: !completedLessons.includes('lesson-3')
     }
   ];
 
@@ -101,13 +108,13 @@ const PracticeLessons: React.FC = () => {
     const isCompleted = completedLessons.includes(lesson.id);
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-20">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white pb-20">
         <div className="p-4">
           <div className="flex items-center justify-between mb-4">
             <Button 
               variant="ghost" 
               onClick={() => setCurrentLesson(null)}
-              className="p-2"
+              className="p-2 hover:bg-gray-100 rounded-full"
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
@@ -115,17 +122,17 @@ const PracticeLessons: React.FC = () => {
             <div className="w-10" />
           </div>
 
-          <div className="mb-4">
+          <div className="mb-6">
             <div className="flex justify-between text-sm text-gray-600 mb-2">
               <span>Video {currentVideo + 1} of {lesson.videos!.length}</span>
               <span>{lesson.xpReward} XP</span>
             </div>
-            <Progress value={((currentVideo + 1) / lesson.videos!.length) * 100} className="h-2" />
+            <Progress value={((currentVideo + 1) / lesson.videos!.length) * 100} className="h-3 bg-gray-200" />
           </div>
 
-          <Card className="mb-6">
+          <Card className="mb-6 shadow-lg overflow-hidden">
             <CardContent className="p-0">
-              <div className="video-container relative">
+              <div className="video-container relative bg-black rounded-lg overflow-hidden">
                 <iframe
                   src={`https://www.youtube.com/embed/${currentVideoData.youtubeId}?autoplay=1&mute=0&controls=1`}
                   title={currentVideoData.title}
@@ -137,19 +144,19 @@ const PracticeLessons: React.FC = () => {
             </CardContent>
           </Card>
 
-          <Card className="mb-6">
+          <Card className="mb-6 shadow-md">
             <CardHeader>
-              <CardTitle className="text-lg">{currentVideoData.title}</CardTitle>
+              <CardTitle className="text-xl text-gray-800">{currentVideoData.title}</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600 mb-4">{currentVideoData.description}</p>
+              <p className="text-gray-600 mb-6 leading-relaxed">{currentVideoData.description}</p>
               
               <div className="flex space-x-3">
                 <Button 
                   variant="outline" 
                   onClick={prevVideo} 
                   disabled={currentVideo === 0}
-                  className="flex-1"
+                  className="flex-1 hover:bg-gray-50"
                 >
                   <ChevronLeft className="w-4 h-4 mr-2" />
                   Previous
@@ -158,14 +165,14 @@ const PracticeLessons: React.FC = () => {
                 {isLastVideo ? (
                   <Button 
                     onClick={completeCurrentLesson} 
-                    className="flex-1"
+                    className="flex-1 bg-primary hover:bg-primary/90"
                     disabled={isCompleted}
                   >
                     <Trophy className="w-4 h-4 mr-2" />
                     {isCompleted ? 'Completed!' : 'Complete Lesson'}
                   </Button>
                 ) : (
-                  <Button onClick={nextVideo} className="flex-1">
+                  <Button onClick={nextVideo} className="flex-1 bg-primary hover:bg-primary/90">
                     Next
                     <ChevronRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -178,69 +185,38 @@ const PracticeLessons: React.FC = () => {
     );
   }
 
-  // Main lessons list view
+  // Main lessons timeline tree view
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pb-20">
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-2xl font-bold">Practice Lessons</h1>
-            <p className="text-gray-600">Level {level} • {xp} XP</p>
-          </div>
-          <div className="text-right">
-            <div className="text-sm text-gray-600">Progress</div>
-            <Progress value={(completedLessons.length / lessons.length) * 100} className="w-20 h-2 mt-1" />
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white pb-24">
+      <div className="sticky top-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 z-40">
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-800">Practice Lessons</h1>
+              <p className="text-gray-600">Level {level} • {xp} XP</p>
+            </div>
+            <div className="text-right">
+              <div className="text-sm text-gray-600 mb-1">Progress</div>
+              <div className="flex items-center space-x-2">
+                <Progress 
+                  value={(completedLessons.length / lessons.length) * 100} 
+                  className="w-20 h-2" 
+                />
+                <span className="text-xs text-gray-500">
+                  {completedLessons.length}/{lessons.length}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
 
-        <div className="space-y-4">
-          {lessons.map((lesson, index) => {
-            const isCompleted = completedLessons.includes(lesson.id);
-            const isLocked = lesson.locked;
-            
-            return (
-              <Card 
-                key={lesson.id} 
-                className={`transition-all ${isLocked ? 'opacity-50' : 'hover:shadow-md'} ${isCompleted ? 'border-green-200 bg-green-50' : ''}`}
-              >
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <h3 className="text-lg font-semibold">{lesson.title}</h3>
-                        {isCompleted && <Badge className="bg-green-500"><Trophy className="w-3 h-3 mr-1" />Complete</Badge>}
-                        {isLocked && <Badge variant="outline">🔒 Locked</Badge>}
-                      </div>
-                      <p className="text-gray-600 mb-3">{lesson.description}</p>
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
-                        <span>📊 {lesson.difficulty}</span>
-                        <span>⭐ {lesson.xpReward} XP</span>
-                        {lesson.videos && <span>🎥 {lesson.videos.length} videos</span>}
-                      </div>
-                    </div>
-                    <Button 
-                      onClick={() => startLesson(index)}
-                      disabled={isLocked}
-                      className="ml-4"
-                    >
-                      {isCompleted ? (
-                        <>
-                          <Star className="w-4 h-4 mr-2" />
-                          Review
-                        </>
-                      ) : (
-                        <>
-                          <Play className="w-4 h-4 mr-2" />
-                          Start
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+      <div className="pt-4">
+        <LessonTimelineTree 
+          lessons={lessons}
+          completedLessons={completedLessons}
+          onStartLesson={startLesson}
+        />
       </div>
     </div>
   );

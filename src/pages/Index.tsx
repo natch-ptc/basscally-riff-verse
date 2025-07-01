@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import SplashScreen from '@/components/SplashScreen';
 import Onboarding from '@/components/Onboarding';
 import BottomNavigation from '@/components/BottomNavigation';
 import PracticeLessons from '@/components/PracticeLessons';
@@ -10,6 +11,7 @@ import { useUserProgress } from '@/hooks/useUserProgress';
 
 const Index = () => {
   const [activeTab, setActiveTab] = useState('practice');
+  const [showSplash, setShowSplash] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(true);
   const { updateStreak, addBadge } = useUserProgress();
 
@@ -24,11 +26,19 @@ const Index = () => {
     updateStreak();
   }, [updateStreak]);
 
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+  };
+
   const handleOnboardingComplete = () => {
     localStorage.setItem('hasCompletedOnboarding', 'true');
     addBadge('New Bass Rookie');
     setShowOnboarding(false);
   };
+
+  if (showSplash) {
+    return <SplashScreen onComplete={handleSplashComplete} />;
+  }
 
   if (showOnboarding) {
     return <Onboarding onComplete={handleOnboardingComplete} />;
@@ -50,7 +60,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       {renderActiveTab()}
       <BottomNavigation activeTab={activeTab} onTabChange={setActiveTab} />
     </div>
