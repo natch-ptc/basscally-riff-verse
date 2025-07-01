@@ -24,6 +24,7 @@ interface UserProgressStore extends UserProgress {
   incrementCoversUploaded: () => void;
   addLikes: (amount: number) => void;
   addFollowers: (amount: number) => void;
+  resetDemoData: () => void;
 }
 
 const calculateLevel = (xp: number): number => {
@@ -42,19 +43,23 @@ const isYesterday = (dateString: string): boolean => {
   return yesterday.toDateString() === new Date(dateString).toDateString();
 };
 
+const getInitialState = () => ({
+  xp: 0,
+  level: 1,
+  streak: 0,
+  lastLoginDate: '',
+  completedLessons: [],
+  badges: [],
+  totalSongsLearned: 0,
+  coversUploaded: 0,
+  totalLikes: 0,
+  followers: 0,
+});
+
 export const useUserProgress = create<UserProgressStore>()(
   persist(
     (set, get) => ({
-      xp: 0,
-      level: 1,
-      streak: 0,
-      lastLoginDate: '',
-      completedLessons: [],
-      badges: ['New Bass Rookie'],
-      totalSongsLearned: 0,
-      coversUploaded: 0,
-      totalLikes: 0,
-      followers: 0,
+      ...getInitialState(),
 
       addXP: (amount: number) => {
         set((state) => {
@@ -132,9 +137,21 @@ export const useUserProgress = create<UserProgressStore>()(
           followers: state.followers + amount,
         }));
       },
+
+      resetDemoData: () => {
+        set(getInitialState());
+      },
     }),
     {
       name: 'user-progress',
     }
   )
 );
+
+// Auto-clear demo data on app startup
+if (typeof window !== 'undefined') {
+  // Clear the stored data immediately when the module loads
+  localStorage.removeItem('user-progress');
+  // Also clear onboarding completion flag for demo
+  localStorage.removeItem('hasCompletedOnboarding');
+}
